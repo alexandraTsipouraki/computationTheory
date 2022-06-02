@@ -59,12 +59,14 @@ char* str;
 %type <str> function_head
 %type <str> function_end
 %type <str> func_args
+%type <str> func_arg
 %type <str> function_ret
 %type <str> data_types
 %type <str> exp
 %type <str> variables
 %type <str> constants
 %type <str> comp_vars
+%type <str> comp_var
 %type <str> all_variables
 %type <str> break_statement
 %type <str> continue_statement
@@ -112,17 +114,17 @@ input:
 |   input prog_body
 {
     if (yyerror_count == 0){
-        puts(c_prologue);
+        //puts(c_prologue);
         printf("%s\n", $2);
     }
 
 };
 
 prog_body:
-function ';'
-|comps
-|commands';' {
-    $$=template("%s ",$1);
+function ';' {$$ = template("%s", $1);}
+|comps {$$ = template("%s", $1);}
+|commands';' prog_body {
+    $$=template("%s %s",$1, $3);
 }
 
 
@@ -147,21 +149,27 @@ TK_IDENTIFIERS'[' TK_INTCONST']'{
     $$=template("%s[]",$1);
 }
 
-comp_vars:
+comp_var:
 TK_IDENTIFIERS { 
     $$=template("%s",$1);
 }
 | '#' TK_IDENTIFIERS{
     $$=template("%s",$2);
 }
-|| '#' array{
+| '#' array{
     $$=template("%s",$2);
 }
 |array { 
     $$=template("%s",$1);
 }
-| comp_vars ',' comp_vars{
+
+comp_vars:
+
+comp_vars ',' comp_var{
     $$ = template("%s, %s", $1, $3);
+}
+|comp_var{
+    $$= template("%s", $1);
 }
 
 
@@ -206,7 +214,9 @@ TK_CONST TK_IDENTIFIERS '=' TK_INTCONST':' data_types {
 
 /* ----------------------------------functions------------------------------- */
 
-func_args:
+
+
+func_arg:
 TK_IDENTIFIERS ':'  data_types{
     $$=template("%s  %s", $3,$1);
 }
@@ -216,7 +226,13 @@ TK_IDENTIFIERS ':'  data_types{
 | TK_IDENTIFIERS'[' TK_INTCONST']'':'  data_types{
     $$=template(" %s %s[%s]",$6,$1,$3);
 }
-| func_args ','  func_args{
+
+
+func_args:
+func_arg {
+    $$ = template("%s", $1);
+}
+| func_arg ',' func_args{
     $$ = template("%s, %s", $1, $3);
 }
 
@@ -266,20 +282,18 @@ variables{
     $$=template("%s;\n",$1);
 }
 |statements{
-    $$=template("%s;\n",$1);
+    $$=template("%s\n",$1);
 }
 |exp{
     $$=template("%s;\n",$1);
 }
 
 commands:
-function_body {
-     $$=template("%s",$1);
-}
-|
+  
 commands ';' function_body{
     $$ = template ("%s %s",$1,$3);
 }
+| function_body{$$ = template("%s", $1);}
 
 
 function:
@@ -347,19 +361,19 @@ TK_FPCONST{
     $$=template(" %s %s %s", $1,$2,$3);
 }
 |exp TK_OR exp  {
-    $$=template(" %s %s %s", $1,$2,$3);
+    $$=template(" %s||%s", $1,$3);
 }
 |exp TK_AND exp {
-    $$=template(" %s %s %s", $1,$2,$3);
+    $$=template("%s && %s", $1,$3);
 }
-|exp TK_NOT exp {
-    $$=template(" %s %s %s", $1,$2,$3);
+| TK_NOT exp {
+    $$=template(" !%s", $2);
 }
 |exp TK_NEQ exp {
-    $$=template(" %s %s %s", $1,$2,$3);
+    $$=template(" %s != %s", $1,$3);
 }
 |exp TK_EQ exp{
-    $$=template(" %s %s %s", $1,$2,$3);
+    $$=template(" %s==%s", $1,$3);
 }
 |exp '<' exp{
     $$=template(" %s < %s ",$1,$3);
@@ -468,7 +482,7 @@ TK_IF '(' exp ')'':' {
 
 iff:
 if_expr  commands ';'TK_ELSE ':' commands';' TK_ENDIF  {
-$$=template("%s  %s }\nelse\n{ %s \n} ", $1,$4,$6);
+$$=template("%s  %s }\nelse\n{ %s \n} ", $1,$2,$6);
 }
 | if_expr commands ';'TK_ENDIF {
 $$=template("%s  %s }",$1,$2);
@@ -534,9 +548,10 @@ TK_IDENTIFIERS '('func_expr')'{
 
 %%
 int main(){   /*Epilogue*/
-#ifdef YYDEBUG
+/* #ifdef YYDEBUG
 yydebug = 1;
-#endif 
+#endif  */
+puts(c_prologue);
 if ( yyparse() == 0 )
     printf("//Accepted!\n");
 else
