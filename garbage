@@ -1,0 +1,56 @@
+COMMON ("."|" "|","|"-"|"+"|"*"|"/"|":"|"_"|'$'|"%"|"!"|"#"|"@"|"&"|"~"|"^"|"("|")"|[a-zA-Z0-9])
+ESCAPE ("\n"|"\t"|"\r"|"\\"|"\"")
+STRING  ("\""({COMMON}|{ESCAPE})"\"")
+variables constants statements function_ret {
+    $$=template("%s \n %s\n %s\n %s\n ",$1,$2,$3,$4);
+}
+|variables statements function_ret {
+    $$=template("%s \n %s\n %s\n  ",$1,$2,$3);
+}
+|statements function_ret {
+    $$=template("%s \n %s\n ",$1,$2);
+}
+|variables statements {
+    $$=template("%s \n %s\n ",$1,$2);
+}
+|statements {
+    $$=template("%s \n  ",$1);
+}
+|variables {
+    $$=template("%s \n  ",$1);
+}
+
+
+---------------------------------------------------------------------------------------------------
+
+
+x= 4 + (500*x) / 245;
+
+y,z,a,b,c : str;
+
+if (prime(num)):
+counter = counter + 1;
+endif;
+
+for num in [3: 8: 2]:
+counter = counter + 1;
+endfor;
+
+
+if (prime(num)):
+counter = counter + 1;
+endif;
+
+while (isPrime and (i < n / 2) ):
+isPrime = n % i != 0;
+endwhile;
+
+readInteger(x,y,"alex");
+
+
+while (isPrime and (i < n / 2) ):
+isPrime = n % i != 0;
+if (prime(num)):
+counter = counter + 1;
+endif;
+endwhile;

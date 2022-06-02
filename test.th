@@ -1,0 +1,40 @@
+-- This is a program that implements and tests the quicksort algorithm
+-- to sort an array of integers.
+
+-- Global variable use by the random number generator function.
+
+comp Coordinates:
+#latitude,#longitude: scalar;
+#latitude,#longitude: scalar;
+#latitude,#longitude: scalar;
+def printArray(a[]:integer, size:integer):
+    for i in [0:size]:
+        writeInteger(a[i]);
+        if (i==size-1):
+            continue;
+        endif;
+        writeStr(", ");
+    endfor;
+    writeStr("\n");
+enddef;
+def printArray(a[]:integer, size:integer):
+    for i in [0:size]:
+        writeInteger(a[i]);
+        if (i==size-1):
+            continue;
+        endif;
+        writeStr(", ");
+    endfor;
+    writeStr("\n");
+enddef;
+def printArray(a[]:integer, size:integer):
+    for i in [0:size]:
+        writeInteger(a[i]);
+        if (i==size-1):
+            continue;
+        endif;
+        writeStr(", ");
+    endfor;
+    writeStr("\n");
+enddef;
+endcomp;
